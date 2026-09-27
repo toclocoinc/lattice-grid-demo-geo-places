@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remote GeoParquet Places Demo - Lattice Grid</title>
+<script>
+  // Where the library comes from. `false` loads the published release from
+  // the CDN; `true` loads a local build from vendor/ instead (not part of
+  // this repository).
+  const LOCAL = false;
+  const LIB = LOCAL ? 'vendor/' : 'https://cdn.jsdelivr.net/npm/@toclocoinc/lattice-grid@1.73.0/';
+  document.write('<link rel="stylesheet" href="' + LIB + 'lattice-grid.min.css">');
+  for (const file of ['lattice-grid.min.js', 'modules/geometry.min.js', 'modules/charts.min.js',
+    'modules/chart-markermap.min.js', 'modules/geo-world-110m.min.js', 'modules/kpi.min.js']) {
+    document.write('<script src="' + LIB + file + '"><' + '/script>');
+  }
+</script>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 1.25rem; background: #fff; color: #14171a; }
+  h1 { font-size: 1.15rem; margin: 0 0 .3rem; }
+  p.lede { margin: 0 0 1rem; color: #5b6570; max-width: 78ch; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+  .tiles > div { border: 1px solid #dfe3e6; border-radius: 6px; padding: .7rem .9rem; }
+  .k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #767d8a; }
+  .v { font-size: 1.3rem; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .panels { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 360px 220px; gap: .9rem; }
+  #grid { grid-row: 1 / 3; height: 100%; border: 1px solid #dfe3e6; border-radius: 6px; }
+  #map { height: 360px; border: 1px solid #dfe3e6; border-radius: 6px; }
+  #bar { height: 220px; border: 1px solid #dfe3e6; border-radius: 6px; }
+  .status { font-size: 12.5px; color: #5b6570; margin: .6rem 0; min-height: 1.3em; }
+  .attribution { font-size: 12px; color: #767d8a; margin-top: 1rem; border-top: 1px solid #dfe3e6; padding-top: .6rem; }
+  .attribution a { color: inherit; }
+</style>
+</head>
+<body data-theme="light">
+<h1>Remote GeoParquet places, read by DuckDB-WASM straight from object storage</h1>
+<p class="lede">
+  Every row below is fetched, at query time, from Overture Maps' <code>places</code> theme sitting in
+  the AWS Open Data bucket — no server, no copy in this repo. DuckDB-WASM reads the file over HTTPS
+  range requests; the fixed bbox below (Greater London) is pushed into the SQL so the browser never
+  scans anything outside it. The probe that chose this host over two Foursquare OS Places mirrors,
+  and the exact byte counts, are in <a href="README.md">README.md</a>.
+</p>
+
+<div class="tiles">
+  <div><div class="k">Places in view</div><div class="v" id="t-rows">&mdash;</div></div>
+  <div><div class="k">Bytes fetched (session)</div><div class="v" id="t-bytes">&mdash;</div></div>
+  <div><div class="k">Remote dataset size</div><div class="v" id="t-total">&mdash;</div></div>
+  <div><div class="k">Fetched of dataset</div><div class="v" id="t-pct">&mdash;</div></div>
+</div>
+<div class="status" id="status">loading the engine&hellip;</div>
+
+<div class="panels">
+  <div id="grid"></div>
+  <div id="map"></div>
+  <div id="bar"></div>
+</div>
+
+<div class="attribution">
+  <p>
+    Places data &copy; <a href="https://overturemaps.org/">Overture Maps Foundation</a>, licensed
+    <a href="https://cdla.dev/permissive-2-0/">CDLA-Permissive-2.0</a> (rows sourced from Foursquare
+    Open Source Places are Apache-2.0). World outline pack: Natural Earth, public domain.
+  </p>
+  <p>
+    Pan or zoom the map: <code>viewportFilter: true</code> writes the visible bounds back to the
+    grid's own filters and re-queries DuckDB (GEO-4) — the grid and bytes-fetched KPI narrow with it.
+    Past 20,000 rows in view the map draws density cells, counted by DuckDB (GEO-6); zoom into a small
+    area to see points again. The bar chart stays over the full fixed London bbox (a grouped
+    aggregate, not the map's window). See README.md for a known KPI display finding (F-GEODEMO-G).
+  </p>
+</div>
+
+        <script>
+            // Bound to toclocoinc.github.io; does nothing anywhere else. localhost never needs a key.
+            LatticeGrid.setLicence('LG1.eyJ2IjoxLCJwIjoibGF0dGljZS1ncmlkIiwidCI6IlRPQ0xPQ08gSW5jIC0gcHVibGljIGRlbW9zIiwiZSI6IjIwMzAtMDEtMDEiLCJkIjpbInRvY2xvY29pbmMuZ2l0aHViLmlvIl19.9De42ua3aCGpiMB6EVRP7Tv-upUlDI-0T07rlSPzvCrsqg8t4YJi7SRnStEpAg48uzmcG7il1fR_TfwkUE7iCA');
+
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
