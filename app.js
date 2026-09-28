@@ -7,11 +7,11 @@
 // page then copies those rows into a DuckDB table in the browser and rebuilds
 // the grid over it, so every pan, zoom, filter and count after that runs in
 // memory, never over the network again.
-import { FROM, BASE_FILTER, LOCAL_TABLE, totalDatasetBytes } from './data.js';
-import { createLoader } from './loading.js';
-import { startEngine, extractLondon } from './engine.js';
-import { refreshStats, showBytes } from './stats.js';
-import { createMap, categoryColours, mapLayers, readout, legendHtml } from './map.js';
+import { FROM, BASE_FILTER, LOCAL_TABLE, totalDatasetBytes } from './data.js?v=20260928b';
+import { createLoader } from './loading.js?v=20260928b';
+import { startEngine, extractLondon } from './engine.js?v=20260928b';
+import { refreshStats, showBytes } from './stats.js?v=20260928b';
+import { createMap, categoryColours, mapLayers, readout, legendHtml } from './map.js?v=20260928b';
 
 const el = (id) => document.getElementById(id);
 const t0 = performance.now();
