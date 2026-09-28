@@ -9,7 +9,7 @@ bytes the engine pulled.
 
 **[See it running](https://toclocoinc.github.io/lattice-grid-demo-geo-places/)**
 
-**Bandwidth note:** each visit fetches roughly 25 MB, because the
+**Bandwidth note:** each visit fetches roughly 40 MB, because the
 bounding-box query has to read the row groups that cover London. Bear that
 in mind on a metered connection.
 
