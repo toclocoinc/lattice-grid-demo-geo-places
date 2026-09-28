@@ -3,8 +3,9 @@
 Half a million places in Greater London from Overture Maps' `places` theme,
 read at query time by DuckDB-WASM from a remote GeoParquet file. No server
 and no copy of the data in this repository: the browser issues HTTPS range
-requests against a 203 MB file and only reads the bytes the query touches. A grid, a marker map and a category bar chart are all
-viewers of that one remote query, and KPI tiles report exactly how many
+requests against a 203 MB file and only reads the bytes the query touches. That read happens once: the London rows are then held in an indexed table
+in the browser, and a grid, a deck.gl map over street tiles and a category
+bar chart are all viewers of it, and KPI tiles report exactly how many
 bytes the engine pulled.
 
 **[See it running](https://toclocoinc.github.io/lattice-grid-demo-geo-places/)**
@@ -25,11 +26,19 @@ in mind on a metered connection.
   pushdown query whose fixed Greater London bounding box
   (`lat 51.28–51.70`, `lon -0.51–0.334`) is written into the SQL, so the
   engine never scans anything outside it.
-- **Marker map** — plotted from the `geom` column, not from `lon`/`lat`.
-  That is what lets the map ask DuckDB for density cells once a view holds
-  more than its 20,000-row cap: the full London bbox opens as density; zoom
-  into a small area to return to points. The viewport is a filter, so every
-  pan or zoom re-queries.
+- **Map** — deck.gl over MapLibre GL JS with OpenFreeMap Positron street
+  tiles, bound with `bindDeck(grid, { viewportFilter: true, position: {
+  geometry: 'geom' } })`. Past the 20,000-row cap the engine's density cells
+  draw as hexagons on a quantile scale (Greater London opens that way); zoom
+  into a borough and the places draw as points coloured by category. The view
+  is a filter, so every pan or zoom re-queries the local table.
+- **Remote once, local after** — the first query reads the remote file with
+  DuckDB-WASM 1.29.0 (HTTP range requests, bytes counted); the London rows
+  are then copied into a DuckDB-WASM 1.32.0 table with an R-tree index on
+  `geom`, and the remote engine is closed. Measured headless: a borough
+  count ~40–50 ms locally against 0.8–3.6 s remote. Two engines because
+  1.29.0 corrupts its next query after building an R-tree index, and 1.32.0
+  opens this file with one full 203 MB GET instead of range requests.
 - **Category bar** — place counts by category, computed by
   `source.aggregate()` in DuckDB.
 - **KPI tiles** — places in view (a real count), bytes fetched this session
@@ -44,8 +53,9 @@ files only one covers Greater London (the files are geographic bands, not a
 hash partition; the other 15 hold zero matching rows), so the page reads
 that single file. Licence:
 [CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/); Foursquare-sourced
-rows within it are Apache-2.0. World outlines from
-[Natural Earth](https://www.naturalearthdata.com/), public domain.
+rows within it are Apache-2.0. Street tiles from
+[OpenFreeMap](https://openfreemap.org) (© OpenMapTiles, data © OpenStreetMap
+contributors).
 
 The page reads a copy of that one partition served from our own CDN
 (`https://data.latticegrid.dev/overture/places-part-00007-sorted.parquet`):
@@ -66,12 +76,11 @@ London-area rows.
 
 ## Grid features used
 
-`duckdbAdapter` + `createPushdownSource` over a remote `read_parquet()`
-(sort, filter and paging pushed to DuckDB), a `geometry` column, `createChart`
-with the `markermap` type, `viewportFilter: true`, density binning above the
-`viewportCap`, `source.aggregate()`, `filter:changed` driving the KPIs and
-bar chart, the `geo-world-110m` outline pack and the KPI module. Modules
-loaded: `geometry`, `charts`, `chart-markermap`, `geo-world-110m`, `kpi`.
+`duckdbAdapter` + `createPushdownSource` over a remote `read_parquet()`, then over a local table,
+(sort, filter and paging pushed to DuckDB), a `geometry` column, `bindDeck`
+with `viewportFilter: true`, density binning above the viewport cap,
+`source.aggregate()`, `filter:changed` driving the KPIs and bar chart, and a
+bar chart. Modules loaded: `geometry`, `charts`, `deckgl`.
 
 ## Notes
 
@@ -115,4 +124,4 @@ key for its own published address only, which is why you will find one in
 the source. Keys for your own sites come from
 [latticegrid.dev](https://www.latticegrid.dev).
 
-This demo is built on Lattice Grid 1.73.0.
+This demo is built on Lattice Grid 1.75.0.

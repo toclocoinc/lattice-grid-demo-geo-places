@@ -5,52 +5,69 @@
 <title>Remote GeoParquet Places Demo - Lattice Grid</title>
 <link rel="icon" href="data:,">
 <script>
+  // `?theme=dark` puts the whole page, grid and street tiles included, under data-theme="dark".
+  document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
+</script>
+<script>
   // Where the library comes from. `false` loads the published release from
   // the CDN; `true` loads a local build from vendor/ instead (not part of
   // this repository).
   const LOCAL = false;
-  const LIB = LOCAL ? 'vendor/' : 'https://cdn.jsdelivr.net/npm/@toclocoinc/lattice-grid@1.74.0/';
+  const LIB = LOCAL ? 'vendor/' : 'https://cdn.jsdelivr.net/npm/@toclocoinc/lattice-grid@1.75.0/';
   document.write('<link rel="stylesheet" href="' + LIB + 'lattice-grid.min.css">');
   for (const file of ['lattice-grid.min.js', 'modules/geometry.min.js', 'modules/charts.min.js',
-    'modules/chart-markermap.min.js', 'modules/geo-world-110m.min.js', 'modules/kpi.min.js']) {
+    'modules/deckgl.min.js']) {
     document.write('<script src="' + LIB + file + '"><' + '/script>');
   }
 </script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/deck.gl@9.1.0/dist.min.js"></script>
 <style>
-  body { font: 14px system-ui, sans-serif; margin: 1.25rem; background: #fff; color: #14171a; }
+  :root { --fg: var(--lattice-foreground, #14171a); --muted: var(--lattice-foreground-muted, #5b6570); --line: #dfe3e6; }
+  [data-theme="dark"] { --line: #3a4048; }
+  body { font: 14px system-ui, sans-serif; margin: 1.25rem; background: var(--lattice-background, #fff); color: var(--fg); }
   h1 { font-size: 1.15rem; margin: 0 0 .3rem; }
-  p.lede { margin: 0 0 1rem; color: #5b6570; max-width: 78ch; }
+  p.lede { margin: 0 0 1rem; color: var(--muted); max-width: 78ch; }
   .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
-  .tiles > div { border: 1px solid #dfe3e6; border-radius: 6px; padding: .7rem .9rem; }
-  .k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #767d8a; }
+  .tiles > div { border: 1px solid var(--line); border-radius: 6px; padding: .7rem .9rem; }
+  .k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
   .v { font-size: 1.3rem; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
-  .panels { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 360px 220px; gap: .9rem; }
-  #grid { grid-row: 1 / 3; height: 100%; border: 1px solid #dfe3e6; border-radius: 6px; }
-  #map { height: 360px; border: 1px solid #dfe3e6; border-radius: 6px; }
-  #bar { height: 220px; border: 1px solid #dfe3e6; border-radius: 6px; }
-  .status { font-size: 12.5px; color: #5b6570; margin: .6rem 0; min-height: 1.3em; }
+  .panels { display: grid; grid-template-columns: 1fr 1.35fr; grid-template-rows: 470px 220px; gap: .9rem; }
+  #grid { grid-row: 1 / 3; grid-column: 1; height: 100%; border: 1px solid var(--line); border-radius: 6px; }
+  #map { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; }
+  #basemap, #deck { position: absolute; inset: 0; }
+  #map .caption { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 4px 8px; font-size: 11.5px;
+    background: rgba(255, 255, 255, .85); color: #14171a; font-variant-numeric: tabular-nums; pointer-events: none; }
+  [data-theme="dark"] #map .caption { background: rgba(20, 23, 26, .85); color: #e6e8ea; }
+  #legend { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 2px; }
+  #legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 3px; vertical-align: -1px; }
+  #bar { border: 1px solid var(--line); border-radius: 6px; }
+  .status { font-size: 12.5px; color: var(--muted); margin: .6rem 0; min-height: 1.3em; }
   .status button { font: inherit; margin-left: .4rem; padding: .1rem .6rem; }
   .stage { position: relative; }
   .loading { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center;
     padding: 1rem; text-align: center; background: rgba(255, 255, 255, .9); border-radius: 6px; color: #14171a; }
+  [data-theme="dark"] .loading { background: rgba(20, 23, 26, .9); color: #e6e8ea; }
   .loading[hidden] { display: none; }
-  .attribution { font-size: 12px; color: #767d8a; margin-top: 1rem; border-top: 1px solid #dfe3e6; padding-top: .6rem; }
+  .attribution { font-size: 12px; color: var(--muted); margin-top: 1rem; border-top: 1px solid var(--line); padding-top: .6rem; }
   .attribution a { color: inherit; }
 </style>
 </head>
-<body data-theme="light">
+<body>
 <h1>Remote GeoParquet places, read by DuckDB-WASM straight from object storage</h1>
 <p class="lede">
   Every row below is fetched, at query time, from Overture Maps' <code>places</code> theme sitting in
   a 203 MB GeoParquet file on a CDN — no server, no copy in this repo. DuckDB-WASM reads the file over HTTPS
   range requests; the fixed bbox below (Greater London) is pushed into the SQL so the browser never
-  scans anything outside it. The probe that chose this host over two Foursquare OS Places mirrors,
+  scans anything outside it. That read happens once: the London rows are then held in the browser's
+  own DuckDB, and every pan, zoom and count after it runs locally. The probe that chose this host over two Foursquare OS Places mirrors,
   and the exact byte counts, are in <a href="README.md">README.md</a>.
 </p>
 
 <div class="tiles">
   <div><div class="k">Places in view</div><div class="v" id="t-rows">&mdash;</div></div>
-  <div><div class="k">Bytes fetched (session)</div><div class="v" id="t-bytes">&mdash;</div></div>
+  <div><div class="k" id="k-bytes">Bytes fetched (session)</div><div class="v" id="t-bytes">&mdash;</div></div>
   <div><div class="k">Remote dataset size</div><div class="v" id="t-total">&mdash;</div></div>
   <div><div class="k">Fetched of dataset</div><div class="v" id="t-pct">&mdash;</div></div>
 </div>
@@ -59,7 +76,8 @@
 <div class="stage">
   <div class="panels">
     <div id="grid"></div>
-    <div id="map"></div>
+    <div id="map"><div id="basemap"></div><div id="deck"></div>
+      <div class="caption"><div id="readout" aria-live="polite">&nbsp;</div><div id="legend"></div></div></div>
     <div id="bar"></div>
   </div>
   <div class="loading" id="loading"><p id="loading-text">Starting DuckDB-WASM&hellip;</p></div>
@@ -69,14 +87,16 @@
   <p>
     Places data &copy; <a href="https://overturemaps.org/">Overture Maps Foundation</a>, licensed
     <a href="https://cdla.dev/permissive-2-0/">CDLA-Permissive-2.0</a> (rows sourced from Foursquare
-    Open Source Places are Apache-2.0). World outline pack: Natural Earth, public domain.
+    Open Source Places are Apache-2.0).
+    Street tiles: <a href="https://openfreemap.org">OpenFreeMap</a>, <a href="https://www.openmaptiles.org/">&copy; OpenMapTiles</a>,
+    data <a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap contributors</a>.
+    Drawing: <a href="https://deck.gl">deck.gl</a> and <a href="https://maplibre.org">MapLibre GL JS</a>.
   </p>
   <p>
-    Pan or zoom the map: <code>viewportFilter: true</code> writes the visible bounds back to the
-    grid's own filters and re-queries DuckDB (GEO-4) — the grid and bytes-fetched KPI narrow with it.
-    Past 20,000 rows in view the map draws density cells, counted by DuckDB (GEO-6); zoom into a small
-    area to see points again. The bar chart stays over the full fixed London bbox (a grouped
-    aggregate, not the map's window). See README.md for a known KPI display finding (F-GEODEMO-G).
+    Pan or zoom the map: <code>bindDeck(grid, { viewportFilter: true })</code> writes the visible bounds
+    back to the grid's own filters and re-queries the in-browser London table — the grid, the places
+    KPI and the category bar narrow with it. Past 20,000 places in view the map draws the engine's density
+    cells as hexagons; zoom into a borough to see the places themselves, coloured by category.
   </p>
 </div>
 

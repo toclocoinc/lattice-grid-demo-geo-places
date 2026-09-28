@@ -53,6 +53,9 @@ export const FROM = `(SELECT
   FROM read_parquet('${PARTITION_URL}')
 ) AS overture_places`;
 
+/** The in-browser table the London extract is copied into after the first read. */
+export const LOCAL_TABLE = 'london';
+
 /** The fixed base filter: never let a query scan outside the demo's city. */
 export const BASE_FILTER = {
   op: 'and',
