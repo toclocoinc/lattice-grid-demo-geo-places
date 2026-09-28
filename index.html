@@ -29,6 +29,11 @@
   #map { height: 360px; border: 1px solid #dfe3e6; border-radius: 6px; }
   #bar { height: 220px; border: 1px solid #dfe3e6; border-radius: 6px; }
   .status { font-size: 12.5px; color: #5b6570; margin: .6rem 0; min-height: 1.3em; }
+  .status button { font: inherit; margin-left: .4rem; padding: .1rem .6rem; }
+  .stage { position: relative; }
+  .loading { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center;
+    padding: 1rem; text-align: center; background: rgba(255, 255, 255, .9); border-radius: 6px; color: #14171a; }
+  .loading[hidden] { display: none; }
   .attribution { font-size: 12px; color: #767d8a; margin-top: 1rem; border-top: 1px solid #dfe3e6; padding-top: .6rem; }
   .attribution a { color: inherit; }
 </style>
@@ -49,12 +54,15 @@
   <div><div class="k">Remote dataset size</div><div class="v" id="t-total">&mdash;</div></div>
   <div><div class="k">Fetched of dataset</div><div class="v" id="t-pct">&mdash;</div></div>
 </div>
-<div class="status" id="status">loading the engine&hellip;</div>
+<div class="status" id="status">Starting DuckDB-WASM&hellip;</div>
 
-<div class="panels">
-  <div id="grid"></div>
-  <div id="map"></div>
-  <div id="bar"></div>
+<div class="stage">
+  <div class="panels">
+    <div id="grid"></div>
+    <div id="map"></div>
+    <div id="bar"></div>
+  </div>
+  <div class="loading" id="loading"><p id="loading-text">Starting DuckDB-WASM&hellip;</p></div>
 </div>
 
 <div class="attribution">
