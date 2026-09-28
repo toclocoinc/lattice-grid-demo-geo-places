@@ -12,7 +12,7 @@
 // without the index a borough-sized count takes ~460 ms; 1.32.0 answers the
 // same count in ~25 ms through the index, but opening this remote file it
 // falls back to one full 203 MB GET instead of range requests.
-import { PARTITION_URL, FROM, LONDON, LOCAL_TABLE } from './data.js?v=20260928b';
+import { PARTITION_URL, FROM, LONDON, LOCAL_TABLE } from './data.js?v=20260928c';
 
 const REMOTE_VERSION = '1.29.0';
 const LOCAL_VERSION = '1.32.0';
