@@ -1,18 +1,34 @@
-// Overture Maps places (AWS open-data bucket), ONE partition of the current
-// release, read straight from S3-over-HTTPS by DuckDB-WASM's httpfs. See
-// README.md for the probe that picked this source over Foursquare OS Places
-// (Hugging Face and Source Cooperative), and for why this is one file rather
-// than all 16 (found by reading the 16 files' bbox footer stats once with
-// the geotools DuckDB — this is the only partition whose bbox range covers
-// Greater London; the release's 16 files are geographically banded, not
-// hash-partitioned, so 15 of them provably hold zero London rows).
+// Overture Maps places, ONE partition of the current release, read over
+// HTTPS range requests by DuckDB-WASM's httpfs. See README.md for the probe
+// that picked this source over Foursquare OS Places (Hugging Face and Source
+// Cooperative), and for why this is one file rather than all 16 (found by
+// reading the 16 files' bbox footer stats once with the geotools DuckDB —
+// this is the only partition whose bbox range covers Greater London; the
+// release's 16 files are geographically banded, not hash-partitioned, so 15
+// of them provably hold zero London rows).
 export const RELEASE = '2026-09-23.1';
 
 /** The one partition covering Greater London (of 16; see README.md). */
 const LONDON_PART = 'part-00007-61ac23fc-0af6-5d61-8c46-5776ba7e6bf0-c000.zstd.parquet';
 
-export const PARTITION_URL =
+/**
+ * The partition as published by Overture in the AWS Open Data bucket
+ * (us-west-2, 728 MB, 256 row groups). Point PARTITION_URL here to read it
+ * straight from the public bucket; the SQL below works unchanged.
+ */
+export const OVERTURE_URL =
   `https://overturemaps-us-west-2.s3.amazonaws.com/release/${RELEASE}/theme=places/type=place/${LONDON_PART}`;
+
+/**
+ * The same partition, re-sorted along a Hilbert curve and trimmed to the
+ * columns this page reads (names.primary, basic_category,
+ * addresses[].freeform, bbox, geometry), 20,000-row groups, ZSTD, GeoParquet
+ * metadata kept: 203 MB served from our own CDN, so the footer is 0.2 MB
+ * instead of 1.6 MB and the London row groups are a quarter of the bytes.
+ * Same rows, same schema shape, same licence (CDLA-Permissive-2.0).
+ */
+export const PARTITION_URL =
+  'https://www.latticegrid.dev/demo-data/large/overture-places-part-00007-sorted.parquet';
 
 /** Greater London, the fixed city bbox every query in this demo carries. */
 export const LONDON = { lonMin: -0.51, lonMax: 0.334, latMin: 51.28, latMax: 51.70 };

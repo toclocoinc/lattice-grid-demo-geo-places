@@ -9,8 +9,8 @@ const el = (id) => document.getElementById(id);
 // showing the literal string a failed `Number()` produces.
 const fmtNumber = (n) => (Number.isFinite(n) ? n.toLocaleString() : 'unknown');
 
-// A cold load is 20–60 s: the engine, then the spatial extension, then ~35 MB
-// of a 728 MB partition over HTTP range requests. Every step is announced.
+// A cold load: the engine, then the spatial extension, then ~25 MB of a
+// 203 MB partition over HTTP range requests. Every step is announced.
 const loader = createLoader({ timeoutMs: 120_000 });
 try {
   const totalBytesPromise = totalDatasetBytes();
@@ -51,8 +51,8 @@ try {
   const adapter = duckdbAdapter({ connection, from: FROM, spatial: true });
   const source = createPushdownSource({ adapter, pageSize: 100, aggregates: { default: 'engine' } });
 
-  loader.step('reading Overture places from AWS Open Data',
-    'Reading Overture places for Greater London from AWS Open Data (~35 MB, first load 20–60 s)…');
+  loader.step('reading Overture places',
+    'Reading Overture places for Greater London over HTTPS range requests (~25 MB of a 203 MB file)…');
   loader.armTimeout();
   // GEO-7 fixed the two-execute()-calls-never-resolve defect this demo's own
   // probe found (F-GEODEMO-F); the documented `.filters.set()` path is what stays.

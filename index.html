@@ -42,7 +42,7 @@
 <h1>Remote GeoParquet places, read by DuckDB-WASM straight from object storage</h1>
 <p class="lede">
   Every row below is fetched, at query time, from Overture Maps' <code>places</code> theme sitting in
-  the AWS Open Data bucket — no server, no copy in this repo. DuckDB-WASM reads the file over HTTPS
+  a 203 MB GeoParquet file on a CDN — no server, no copy in this repo. DuckDB-WASM reads the file over HTTPS
   range requests; the fixed bbox below (Greater London) is pushed into the SQL so the browser never
   scans anything outside it. The probe that chose this host over two Foursquare OS Places mirrors,
   and the exact byte counts, are in <a href="README.md">README.md</a>.
