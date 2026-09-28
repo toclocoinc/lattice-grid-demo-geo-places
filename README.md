@@ -48,7 +48,7 @@ rows within it are Apache-2.0. World outlines from
 [Natural Earth](https://www.naturalearthdata.com/), public domain.
 
 The page reads a copy of that one partition served from our own CDN
-(`https://www.latticegrid.dev/demo-data/large/overture-places-part-00007-sorted.parquet`):
+(`https://data.latticegrid.dev/overture/places-part-00007-sorted.parquet`):
 the same rows, re-sorted along a Hilbert curve and trimmed to the columns
 the page uses, in 20,000-row groups with ZSTD and the GeoParquet metadata
 kept — 203 MB instead of 728 MB, a 0.2 MB footer instead of 1.6 MB, and the

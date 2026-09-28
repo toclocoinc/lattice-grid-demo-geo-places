@@ -23,12 +23,12 @@ export const OVERTURE_URL =
  * The same partition, re-sorted along a Hilbert curve and trimmed to the
  * columns this page reads (names.primary, basic_category,
  * addresses[].freeform, bbox, geometry), 20,000-row groups, ZSTD, GeoParquet
- * metadata kept: 203 MB served from our own CDN, so the footer is 0.2 MB
+ * metadata kept: 203 MB served from our data CDN, so the footer is 0.2 MB
  * instead of 1.6 MB and the London row groups are a quarter of the bytes.
  * Same rows, same schema shape, same licence (CDLA-Permissive-2.0).
  */
 export const PARTITION_URL =
-  'https://www.latticegrid.dev/demo-data/large/overture-places-part-00007-sorted.parquet';
+  'https://data.latticegrid.dev/overture/places-part-00007-sorted.parquet';
 
 /** Greater London, the fixed city bbox every query in this demo carries. */
 export const LONDON = { lonMin: -0.51, lonMax: 0.334, latMin: 51.28, latMax: 51.70 };
