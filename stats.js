@@ -1,6 +1,6 @@
 // The KPI tiles and the category bar: counted by DuckDB over the grid's
 // current filters, never by the browser over a page of rows.
-import { fmtBytes } from './loading.js?v=20260929a-1780';
+import { fmtBytes } from './loading.js?v=20260929b-1790';
 
 const el = (id) => document.getElementById(id);
 // F-GEODEMO-G: a KPI that cannot yet read its number says so.
