@@ -1,7 +1,7 @@
 // The map window: MapLibre draws the street tiles (OpenFreeMap), deck.gl
 // draws the layers and owns the view. Past the binding's cap the engine's
 // density cells become hexagons; under it, one dot per place by category.
-import { LONDON } from './data.js?v=20261002f-0009';
+import { LONDON } from './data.js?v=20261003a-0009';
 
 // ColorBrewer PuBu (density, quantile classes) and Tableau 10 (categories).
 const DENSITY = [[241, 238, 246], [208, 209, 230], [166, 189, 219], [116, 169, 207], [43, 140, 190], [4, 90, 141]];
