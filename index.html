@@ -13,7 +13,7 @@
   // the CDN; `true` loads a local build from vendor/ instead (not part of
   // this repository).
   const LOCAL = false;
-  const LIB = LOCAL ? 'vendor/' : 'https://cdn.jsdelivr.net/npm/@toclocoinc/lattice-grid@1.86.7/';
+  const LIB = LOCAL ? 'vendor/' : 'https://cdn.latticegrid.dev/lattice-grid@1.111.5/';
   document.write('<link rel="stylesheet" href="' + LIB + 'lattice-grid.min.css">');
   for (const file of ['lattice-grid.min.js', 'modules/geometry.min.js', 'modules/charts.min.js',
     'modules/deckgl.min.js']) {
@@ -106,6 +106,6 @@
         </script>
 
 <footer style="margin:1rem 0 0;font-size:12px">Built with <a href="https://www.latticegrid.dev/operational-software/">Lattice Grid</a></footer>
-<script type="module" src="app.js?v=20261005a"></script>
+<script type="module" src="app.js?v=20261022a"></script>
 </body>
 </html>
